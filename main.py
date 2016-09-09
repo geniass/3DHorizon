@@ -1,8 +1,19 @@
 from math import pi, sin, cos
+from TI_IMU import TI_IMU
+import csv
+
  
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.actor.Actor import Actor
+
+f = open('test.csv', 'rb')
+reader = csv.reader(f, delimiter = "," )
+allData = []
+for i in reader:
+    t = (i[3],i[4],i[5])
+    allData.append(t)
+f.close()
  
 class MyApp(ShowBase):
     def __init__(self):
@@ -26,14 +37,21 @@ class MyApp(ShowBase):
         self.pandaActor.reparentTo(self.render)
         # Loop its animation.
         self.pandaActor.loop("walk")
- 
+
+        #
+        # with serial.Serial(args.comport, args.baud) as ser:
+        #     imu = TI_IMU(ser)
+        #     imu.start()
+
+
     # Define a procedure to move the camera.
     def spinCameraTask(self, task):
-        angleDegrees = task.time * 6.0
+        angleDegrees = task.time * 0.1
         angleRadians = angleDegrees * (pi / 180.0)
         self.camera.setPos(20 * sin(angleRadians), -20.0 * cos(angleRadians), 3)
         self.camera.setHpr(angleDegrees, 0, 0)
         return Task.cont
- 
+
+
 app = MyApp()
 app.run()
