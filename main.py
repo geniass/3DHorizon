@@ -7,13 +7,14 @@ from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.actor.Actor import Actor
 
-f = open('test.csv', 'rb')
+f = open('test_data.csv', 'rb')
 reader = csv.reader(f, delimiter = "," )
 allData = []
 for i in reader:
-    t = (i[3],i[4],i[5])
+    t = (float(i[3]),float(i[4]),float(i[5]))
     allData.append(t)
 f.close()
+
  
 class MyApp(ShowBase):
     def __init__(self):
@@ -43,13 +44,20 @@ class MyApp(ShowBase):
         #     imu = TI_IMU(ser)
         #     imu.start()
 
+        #Initialize index for incrementing rows of data
+        self.inde = 0
 
     # Define a procedure to move the camera.
     def spinCameraTask(self, task):
         angleDegrees = task.time * 0.1
         angleRadians = angleDegrees * (pi / 180.0)
         self.camera.setPos(20 * sin(angleRadians), -20.0 * cos(angleRadians), 3)
-        self.camera.setHpr(angleDegrees, 0, 0)
+        row = allData[self.inde]
+        self.camera.setHpr(angleDegrees, row[1], row[2])
+        if self.inde + 1 < len(allData):
+            self.inde += 1
+        else:
+            self.inde = 0
         return Task.cont
 
 
