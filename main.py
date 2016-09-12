@@ -9,7 +9,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.actor.Actor import Actor
 
-f = open('60hz.csv', 'rb')
+f = open('60hz.csv', 'r')
 reader = csv.reader(f, delimiter = "," )
 allData = []
 for i in reader:
@@ -17,11 +17,11 @@ for i in reader:
     allData.append(t)
 f.close()
 
- 
+
 class MyApp(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
- 
+
         # Load the environment model.
         self.scene = self.loader.loadModel("models/environment")
         # Reparent the model to render.
@@ -29,10 +29,10 @@ class MyApp(ShowBase):
         # Apply scale and position transforms on the model.
         self.scene.setScale(0.25, 0.25, 0.25)
         self.scene.setPos(-8, 42, 0)
- 
+
         # Add the spinCameraTask procedure to the task manager.
         self.taskMgr.add(self.spinCameraTask, "SpinCameraTask")
- 
+
         # Load and transform the panda actor.
         self.pandaActor = Actor("models/panda-model",
                                 {"walk": "models/panda-walk4"})
@@ -47,14 +47,14 @@ class MyApp(ShowBase):
         #Initialize timer to match refresh rate of screen with refresh rate of sensor
         self.start_time = time.time()
 
-        self.ser = serial.Serial('com1', 115200)
-        self.imu=TI_IMU.TI_IMU(self.ser)
+        self.ser = serial.Serial('/dev/ttyACM0', 115200)
+        self.imu = TI_IMU(self.ser)
         self.imu.start()
-        
+
 
     # Define a procedure to move the camera.
     def spinCameraTask(self, task):
-        state = imu.get_state()
+        state = self.imu.get_state()
         angleDegrees = task.time * 0.1
         angleRadians = angleDegrees * (pi / 180.0)
         self.camera.setPos(20 * sin(angleRadians), -20.0 * cos(angleRadians), 3)
@@ -70,6 +70,3 @@ class MyApp(ShowBase):
 
 app = MyApp()
 app.run()
-
-
-
