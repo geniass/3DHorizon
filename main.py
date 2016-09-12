@@ -1,17 +1,18 @@
 from math import pi, sin, cos
 from TI_IMU import TI_IMU
 import csv
+import time
 
- 
+
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.actor.Actor import Actor
 
-f = open('test_data.csv', 'rb')
+f = open('60hz.csv', 'rb')
 reader = csv.reader(f, delimiter = "," )
 allData = []
 for i in reader:
-    t = (float(i[3]),float(i[4]),float(i[5]))
+    t = (float(i[3]),float(i[4]),float(i[5]))   #i[3] is roll, i[4] is pitch and [5] is yaw
     allData.append(t)
 f.close()
 
@@ -47,19 +48,30 @@ class MyApp(ShowBase):
         #Initialize index for incrementing rows of data
         self.inde = 0
 
+        #Initialize timer to match refresh rate of screen with refresh rate of sensor
+        self.start_time = time.time()
+
     # Define a procedure to move the camera.
     def spinCameraTask(self, task):
+        self.current_time = time.time()
+        self.time_difference = self.current_time - self.start_time
         angleDegrees = task.time * 0.1
         angleRadians = angleDegrees * (pi / 180.0)
         self.camera.setPos(20 * sin(angleRadians), -20.0 * cos(angleRadians), 3)
         row = allData[self.inde]
-        self.camera.setHpr(angleDegrees, row[1], row[2])
+        self.camera.setHpr(angleDegrees, row[1], row[0])
         if self.inde + 1 < len(allData):
-            self.inde += 1
+                self.inde += 1
         else:
-            self.inde = 0
+                self.inde = 0
+        # if self.time_difference >= 0.1:
+        #     self.start_time = self.current_time
         return Task.cont
+
 
 
 app = MyApp()
 app.run()
+
+
+
