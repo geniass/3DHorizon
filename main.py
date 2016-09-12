@@ -1,5 +1,6 @@
 from math import pi, sin, cos
 from TI_IMU import TI_IMU
+import serial
 import csv
 import time
 
@@ -40,32 +41,29 @@ class MyApp(ShowBase):
         # Loop its animation.
         self.pandaActor.loop("walk")
 
-        #
-        # with serial.Serial(args.comport, args.baud) as ser:
-        #     imu = TI_IMU(ser)
-        #     imu.start()
-
         #Initialize index for incrementing rows of data
         self.inde = 0
 
         #Initialize timer to match refresh rate of screen with refresh rate of sensor
         self.start_time = time.time()
 
+        self.ser = serial.Serial('com1', 115200)
+        self.imu=TI_IMU.TI_IMU(self.ser)
+        self.imu.start()
+        
+
     # Define a procedure to move the camera.
     def spinCameraTask(self, task):
-        self.current_time = time.time()
-        self.time_difference = self.current_time - self.start_time
+        state = imu.get_state()
         angleDegrees = task.time * 0.1
         angleRadians = angleDegrees * (pi / 180.0)
         self.camera.setPos(20 * sin(angleRadians), -20.0 * cos(angleRadians), 3)
         row = allData[self.inde]
-        self.camera.setHpr(angleDegrees, row[1], row[0])
+        self.camera.setHpr(angleDegrees, state[4], state[3])
         if self.inde + 1 < len(allData):
                 self.inde += 1
         else:
                 self.inde = 0
-        # if self.time_difference >= 0.1:
-        #     self.start_time = self.current_time
         return Task.cont
 
 
