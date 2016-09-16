@@ -22,6 +22,10 @@ with serial.Serial(args.comport, args.baud) as ser:
     imu = TI_IMU(ser)
     imu.start()
     while True:
+        while not imu.data_ready():
+            # wait for new data so that old data isn't repeated
+            pass
+            
         state = imu.get_state()
         strline = list([str(v) for v in state])
         strline = ",".join(strline)

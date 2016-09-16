@@ -2,7 +2,6 @@
 
 import threading
 
-
 class TI_IMU (threading.Thread):
     LINE_START = "IMU:"
 
@@ -28,8 +27,6 @@ class TI_IMU (threading.Thread):
                 buffer_string = lines[-1]
 
                 self.update()
-                self.condition.set()
-                self.condition.clear()
 
     def update(self):
         start_idx = -1
@@ -47,8 +44,13 @@ class TI_IMU (threading.Thread):
         if len(vals) == 6:
             self.x, self.y, self.z, self.roll, self.pitch, self.yaw = tuple(
                 vals)
+            self.condition.set()
+
+    def data_ready(self):
+        return self.condition.is_set()
 
     def get_state(self):
-        self.condition.wait()
+    #    self.condition.wait()
+        self.condition.clear()
         return (self.x, self.y, self.z,
                 self.roll,  self.pitch, self.yaw)

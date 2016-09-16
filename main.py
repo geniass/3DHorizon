@@ -51,15 +51,18 @@ class MyApp(ShowBase):
         self.imu = TI_IMU(self.ser)
         self.imu.start()
 
+        while not self.imu.data_ready():
+            self.state = self.imu.get_state()
 
     # Define a procedure to move the camera.
     def spinCameraTask(self, task):
-        state = self.imu.get_state()
+        if self.imu.data_ready():
+            self.state = self.imu.get_state()
         angleDegrees = task.time * 0.1
         angleRadians = angleDegrees * (pi / 180.0)
         self.camera.setPos(20 * sin(angleRadians), -20.0 * cos(angleRadians), 3)
         row = allData[self.inde]
-        self.camera.setHpr(angleDegrees, state[4], state[3])
+        self.camera.setHpr(angleDegrees, self.state[4], self.state[3])
         if self.inde + 1 < len(allData):
                 self.inde += 1
         else:
