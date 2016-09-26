@@ -14,7 +14,6 @@ class SinusoidalMotion:
         self.w = 2 * pi * f
         self.acc_mag = acc_mag
         self.p = phase
-        self.k = 0
         self.dt = dt
         self.noise_std = noise_std
         self.meas_noise_std = meas_noise_std
@@ -23,14 +22,6 @@ class SinusoidalMotion:
         self.acc = self.acceleration(0)
         self.vel = self.velocity(0)
         self.pos = self.position(0)
-
-    def update(self):
-        self.acc = self.acceleration(self.k)
-        self.vel = self.velocity(self.k)
-        self.pos = self.position(self.k)
-
-        self.k += 1
-        return (self.pos, self.vel, self.acc)
 
     def sense(self):
         return self.acc + \
