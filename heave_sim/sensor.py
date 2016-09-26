@@ -12,13 +12,14 @@ class SinusoidalMotion:
 
     def __init__(self, acc_mag=1, f=1, phase=0, dt=1 / 100, noise_std=0.01, meas_noise_std=0.1):
         self.w = 2 * pi * f
-        self.acc_mag = acc_mag / self.w**2
+        self.acc_mag = acc_mag
         self.p = phase
         self.k = 0
         self.dt = dt
         self.noise_std = noise_std
         self.meas_noise_std = meas_noise_std
 
+        self.acc_offset = -9.4
         self.acc = self.acceleration(0)
         self.vel = self.velocity(0)
         self.pos = self.position(0)
@@ -32,16 +33,20 @@ class SinusoidalMotion:
         return (self.pos, self.vel, self.acc)
 
     def sense(self):
-        return self.acc + randn() * self.meas_noise_std
+        return self.acc + \
+                self.acc_offset + \
+                randn() * self.meas_noise_std
 
     def noise(self):
         return randn() * self.noise_std
 
     def acceleration(self, k):
-        return -(self.acc_mag * self.w**2) * cos(self.w * self.dt * k + self.p)
+        return self.acc_mag * sin(self.w * self.dt * k + self.p)
 
     def velocity(self, k):
-        return -(self.acc_mag * self.w) * sin(self.w * self.dt * k + self.p) + self.noise()
+        return -(self.acc_mag / self.w) * \
+                cos(self.w * self.dt * k + self.p)
 
     def position(self, k):
-        return (self.acc_mag) * cos(self.w * self.dt * k + self.p) + self.noise()
+        return -(self.acc_mag / self.w**2) * \
+                sin(self.w * self.dt * k + self.p)
