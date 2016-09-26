@@ -5,10 +5,13 @@ import numpy as np
 from numpy.random import randn
 import matplotlib.pyplot as plt
 import book_plots as bp
+import peakutils
+import peakdetect
+from scipy import signal
 
 np.random.seed(1233)
 
-dt = 1 / 100
+dt = 1 / 20
 R = 0.01
 q = 0.06
 
@@ -25,25 +28,56 @@ for k in range(N):
     xs[k, 0] = motion.position(k)
 
 # initial conditions
-x0 = np.asarray((xs[0, 0], xs[0, 1], motion.acc_offset))
+# x0 = np.asarray((xs[0, 0], xs[0, 1], motion.acc_offset))
 zs = acc + randn(N) * R + motion.acc_offset
 
+
+"""
+Use FFT and peakdetect to find sinusoid parameters
+"""
+n = 2**12
+n_window = int(len(zs)/2)
+window = signal.blackmanharris(n_window)
+z_fft = np.fft.rfft(zs[0:n_window] * window, n=n) * 4 / n_window
+z_fft_mag = np.absolute(z_fft)
+f = np.fft.rfftfreq(n, d=dt)
+
+# peak detection
+# this stuff isn't working
+# peaks = peakdetect_parabola(z_fft_mag, f)
+# print(peaks)
+# indices = peakutils.indexes(z_fft_mag, thres=0.1, min_dist=1)
+
+# this one works
+maxtab, _ = peakdetect.peakdet(z_fft_mag, 0.01*np.max(z_fft_mag), range(int(n/2)+1))
+plt.figure()
+plt.plot(f, z_fft_mag)
+plt.scatter(f[np.array(maxtab)[:, 0].astype(int)], np.array(maxtab)[:, 1], color='blue')
+plt.show()
+
+print(f[np.array(maxtab)[0, 0].astype(int)])
+
+fft_motion = SinusoidalMotion(acc_mag=np.array(maxtab)[1, 1], f=f[np.array(maxtab)[1, 0].astype(int)], dt=dt, noise_std=q, meas_noise_std=R)
+# initial conditions
+x0 = np.asarray((fft_motion.position(0), fft_motion.velocity(0), -np.array(maxtab)[0, 1]))
+print(x0)
+print(fft_motion.acc_mag)
 """
 Apply Kalman filter
 """
 # initial covariance matrix
 # there is some uncertainty in the pos and vel
 # but accel offset is fairly constrained
-P = np.array([[10, 0, 0],
-             [0, 10, 0],
-             [0, 0, 0.1**2]])
+P = np.array([[1000, 0, 0],
+             [0, 1000, 0],
+             [0, 0, 100**2]])
 # this matrix is basically trial and error (i.e. guessing)
 # however the accel offset is not expected to change much
 Q = np.array([[(q/10)**2, 0, 0],
              [0, q**2, 0],
              [0, 0, (0.01)**2]])
 print('Process Noise (Q):', Q)
-kf = SinusoidalMotionKalmanFilter(R, Q, dt, motion.w, x0, P)
+kf = SinusoidalMotionKalmanFilter(R, Q, dt, fft_motion.w, x0, P)
 xests, variances, ps = [], [], []
 for z in zs:
     kf.predict()
