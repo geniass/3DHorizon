@@ -2,9 +2,29 @@ from sensor import SinusoidalMotion
 from kalman import SinusoidalMotionKalmanFilter
 import numpy as np
 import matplotlib.pyplot as plt
-import peakdetect
-from scipy import signal
 import csv
+from scipy.optimize import curve_fit
+
+
+def rms(xs):
+    return np.sqrt(np.sum(x**2 for x in xs)/len(xs))
+
+"""
+Computes a Fourier series with DC offset and the fundamental
+frequency evaluated at x
+f - fundamental freqency
+a0 - DC offset
+a1 - fundamental's magnitude
+p1 - fundamental's phase
+"""
+def fourier1(x, a0, f1, a1, p1):
+    ret = a0 + a1 * np.sin(2*np.pi * f1 * x + p1)
+    return ret
+
+def fourier2(x, a0, f1, a1, p1, f2, a2, p2):
+    ret = a0 + a1 * np.sin(2*np.pi * f1 * x + p1) +\
+            a2 * np.sin(2*np.pi*f2 * x + p2)
+    return ret
 
 np.random.seed(1233)
 
@@ -14,7 +34,7 @@ q = 0.06
 
 
 zs = []
-with open('filt_acc.csv', 'r') as dataFile:
+with open('acc_unfilt.csv', 'r') as dataFile:
     reader = csv.reader(dataFile, delimiter=",")
     for l in reader:
         zs.append(float(l[0]))
@@ -22,39 +42,47 @@ N = len(zs)
 zs = np.asarray(zs)
 
 """
-Use FFT and peakdetect to find sinusoid parameters
+Use Fourier series fitting to find sinusoid params
 """
-n = 2**16
-n_window = int(len(zs)/2)
-window = signal.blackmanharris(n_window)
-z_fft = np.fft.rfft(zs[0:n_window] * window, n=n) * 4 / n_window
-z_fft_mag = np.absolute(z_fft)
-f = np.fft.rfftfreq(n, d=dt)
+t = np.arange(0, len(zs) * dt, dt)
+# fit fourier1 to the acceleration data
+# There must be a better way to do this.....
+# To prevent local minima, do the curve fitting a few times
+# with different initial values. Then use the best parameters
+# (lowest mean variance)
+popt, pcov = [], np.inf
+def mean_cov(cov):
+    return np.mean(np.diagonal(cov))
 
-
-# this one works
-maxtab, _ = peakdetect.peakdet(z_fft_mag, 0.01*np.max(z_fft_mag), range(int(n/2)+1))
+for f in np.arange(0.1, 2, 0.1):
+    opt, cov = curve_fit(fourier1, t, zs, p0=[10, f, 1, 0])
+    print('f:', f, mean_cov(cov), opt)
+    if mean_cov(cov) < pcov:
+        pcov = mean_cov(cov)
+        popt = opt
+print('Best fit: DC=%f, A=%f, f=%f, p=%f' % (popt[0], popt[2], popt[1], popt[3]))
 plt.figure()
-plt.plot(f, z_fft_mag)
-plt.scatter(f[np.array(maxtab)[:, 0].astype(int)], np.array(maxtab)[:, 1], color='blue')
+plt.plot(t, zs, linestyle='--')
+plt.plot(t, fourier1(t, popt[0], popt[1], popt[2], popt[3]))
 plt.show()
 
-print("Peak frequencies:", f[np.array(maxtab)[:, 0].astype(int)])
-
-fft_motion = SinusoidalMotion(acc_mag=np.array(maxtab)[1, 1], f=f[np.array(maxtab)[1, 0].astype(int)], dt=dt, noise_std=q, meas_noise_std=R)
+fft_motion = SinusoidalMotion(acc_mag=popt[2], f=popt[1], phase=popt[3],
+                              dt=dt, noise_std=q, meas_noise_std=R)
 # initial conditions
-x0 = np.asarray((fft_motion.position(0), fft_motion.velocity(0), np.array(maxtab)[0, 1]))
+x0 = np.asarray((fft_motion.position(0), fft_motion.velocity(0), popt[0]))
 print("Initial state:", x0)
 print("Average acc mag.:", fft_motion.acc_mag)
+
+
 """
 Apply Kalman filter
 """
 # initial covariance matrix
 # there is some uncertainty in the pos and vel
 # but accel offset is fairly constrained
-P = np.array([[1000, 0, 0],
-             [0, 1000, 0],
-             [0, 0, 100**2]])
+P = np.array([[10, 0, 0],
+             [0, 10, 0],
+             [0, 0, 1**2]])
 # this matrix is basically trial and error (i.e. guessing)
 # however the accel offset is not expected to change much
 Q = np.array([[(q/10)**2, 0, 0],
