@@ -1,0 +1,5 @@
+Go to C:\Panda3D-1.9.2-x64\etc\Confi.prc and change:
+
+"show-frame-rate-meter  #f"
+to
+"show-frame-rate-meter  #t"
