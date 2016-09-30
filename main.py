@@ -22,8 +22,10 @@ class MyApp(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
 
+        self.setFrameRateMeter(True)
+
         # Load the environment model.
-        self.scene = self.loader.loadModel("models/environment")
+        self.scene = self.loader.loadModel("3dcrossmatrix.egg")
         # Reparent the model to render.
         self.scene.reparentTo(self.render)
         # Apply scale and position transforms on the model.
