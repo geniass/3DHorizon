@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg
 from filterpy.kalman import KalmanFilter
-from sensor import SinusoidalMotion
+from heave_sim.sensor import SinusoidalMotion
 from spectrum import spectrum
 import peakutils
 
