@@ -22,13 +22,9 @@ with serial.Serial(args.comport, args.baud) as ser:
     imu = TI_IMU(ser)
     imu.start()
     while True:
-        while not imu.data_ready():
-            # wait for new data so that old data isn't repeated
-            pass
-            
-        state = imu.get_state()
-        strline = list([str(v) for v in state])
-        strline = ",".join(strline)
+        # get_state is blocking so it will only be called when data is avaiable
+        s = imu.get_state()
+        strline = ",".join([str(v) for v in [s['x'], s['y'], s['z'], s['roll'], s['pitch'], s['yaw']]])
 
         outfile.write(strline + "\n")
         outfile.flush()

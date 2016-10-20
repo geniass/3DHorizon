@@ -4,6 +4,7 @@ from filterpy.kalman import KalmanFilter
 from heave_sim.sensor import SinusoidalMotion
 from spectrum import spectrum
 import peakutils
+import time
 
 
 '''
@@ -124,7 +125,15 @@ class SinusoidalMotionKalmanFilter:
 
         self.kf = kf
 
+        self.print_skip = 0
+
     def step(self, z):
+        t = time.time()
         self.kf.predict()
         self.kf.update(z)
+        dt = time.time() - t
+        self.print_skip += 1
+        if self.print_skip >= 10:
+        #    print("dt: %f" %(dt))
+            self.print_skip = 0
         return self.kf.x
