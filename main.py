@@ -40,11 +40,10 @@ class MyApp(ShowBase):
         self.scene.flattenStrong()
         self.scene.analyze()
 
-
         self.pos = {'x': 0., 'y': 0., 'z': 0.}
 
-        #self.ser = serial.Serial('/dev/ttyACM0', 115200)
-        self.ser = SerialMock()
+        self.ser = serial.Serial('/dev/ttyACM0', 115200)
+        #self.ser = SerialMock()
         self.imu = TI_IMU(self.ser)
 
         self.motion_queue = Queue(maxsize=1)
@@ -53,18 +52,14 @@ class MyApp(ShowBase):
 
         self.taskMgr.add(self.updateCamera, "updateCameraTask")
 
-    #@profile
     def updateCamera(self, task):
         try:
             self.pos = self.motion_queue.get(block=False)
-            # self.camera.setHpr(0, self.state[4], self.state[3])
-
         except queue.Empty:
             pass
-            #print("empty")
-            #return Task.cont
         else:
-            self.camera.setPos(0, -20.0, self.pos['z'])
+            self.camera.setHpr(0, self.pos['pitch'], self.pos['roll'])
+            self.camera.setPos(0, -20.0, 3 + 10*self.pos['z'])
         return Task.cont
 
 app = MyApp()

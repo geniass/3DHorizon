@@ -2,12 +2,27 @@ import time
 import csv
 import numpy as np
 
+from serial.serialutil import SerialBase
 
-class SerialMock:
 
-    SAMPLE_RATE = 100
+'''
+Fake Serial port class that loads a csv file and sends the data as if over a
+real serial port. For some reason using this class causes a much larger delay
+than a real serial port.
+'''
+class SerialMock(SerialBase):
 
-    def __init__(self, *args):
+    SAMPLE_RATE = 50
+
+    def __init__(self):
+        self.is_open = False
+
+        SerialBase.__init__(self, port="serial_mock")
+
+    def _reconfigure_port(self):
+        return
+
+    def open(self):
         self.prev_time = time.time()
 
         self.idx = 0
@@ -16,13 +31,16 @@ class SerialMock:
             reader = csv.reader(f, delimiter = "," )
             self.data = []
             for row in reader:
-                # = (float(i[3]),float(i[4]),float(i[5]))   #i[3] is roll, i[4] is pitch and [5] is yaw
                 self.data.append([float(d) for d in row])
                 self.data[-1][2] = np.sin(2*np.pi*1/SerialMock.SAMPLE_RATE*i)
-                print(self.data[-1][2])
                 i += 1
+        self.is_open = True
 
-    def inWaiting(self):
+    def close(self):
+        self.is_open = False
+
+    @property
+    def in_waiting(self):
         if time.time() - self.prev_time > 1/SerialMock.SAMPLE_RATE:
             return len(serial_string(self.data[self.idx]))
         else:
@@ -41,4 +59,4 @@ class SerialMock:
         return s
 
 def serial_string(d):
-    return bytes("IMU: %f %f %f %f %f %f\n" % tuple(d), 'utf-8')
+    return bytes(":%f %f %f %f %f %f\n" % tuple(d), 'utf-8')

@@ -1,56 +1,43 @@
 #!/bin/env python3
 
-import threading
+from serial.threaded import ReaderThread, FramedPacket
+from queue import Queue
 
-class TI_IMU (threading.Thread):
-    LINE_START = "IMU:"
+class TI_IMU:
+
+    class IMUFramedPacket(FramedPacket):
+        START = b":"
+        STOP = b"\n"
+
+        def __init__(self, packet_queue):
+            FramedPacket.__init__(self)
+            self.packet_queue = packet_queue
+
+        def __call__(self):
+            return self
+
+        def handle_packet(self, packet):
+            vals = [float(v.strip()) for v
+                    in (packet).split()]
+            if len(vals) == 6:
+                state = dict(zip(['x', 'y', 'z', 'roll', 'pitch', 'yaw'],
+                                    vals))
+                self.packet_queue.put(state)
+
+        def handle_out_of_packet_data(self, data):
+            print("OP: " + bytes.decode(data))
+
 
     def __init__(self, comport):
-        threading.Thread.__init__(self)
         self.comport = comport
 
-        self.x = self.y = self.z = 0
-        self.roll = self.pitch = self.yaw = 0
+        self.packet_queue = Queue(maxsize=0)
 
-        self.last_received = ""
+        self.protocol = TI_IMU.IMUFramedPacket(self.packet_queue)
+        self.reader_thread = ReaderThread(self.comport, self.protocol)
 
-        self.condition = threading.Event()
-
-    def run(self):
-        buffer_string = ''
-        while True:
-            buffer_string = buffer_string + \
-                bytes.decode(self.comport.read(self.comport.inWaiting()))
-            if '\n' in buffer_string:
-                lines = buffer_string.split('\n')
-                self.last_received = lines[-2]
-                buffer_string = lines[-1]
-
-                self.update()
-
-    def update(self):
-        start_idx = -1
-        line = ""
-        while start_idx < 0:
-            line = self.last_received
-            start_idx = line.find(TI_IMU.LINE_START)
-            if start_idx < 0:
-                continue
-            line = line[start_idx:]
-        vals = [float(v) for v
-                in line.split(' ')
-                if v.find(TI_IMU.LINE_START) < 0]
-
-        if len(vals) == 6:
-            self.x, self.y, self.z, self.roll, self.pitch, self.yaw = tuple(
-                vals)
-            self.condition.set()
-
-    def data_ready(self):
-        return self.condition.is_set()
+    def start(self):
+        self.reader_thread.start()
 
     def get_state(self):
-    #    self.condition.wait()
-        self.condition.clear()
-        return (self.x, self.y, self.z,
-                self.roll,  self.pitch, self.yaw)
+        return self.packet_queue.get()
