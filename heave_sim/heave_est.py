@@ -19,10 +19,10 @@ q = 0.00006
 
 zs = []
 # 'platform_data/11-10-heave.csv
-with open('platform_data/15-10-heave.csv', 'r') as dataFile:
+with open('platform_data/15-10-sway.csv', 'r') as dataFile:
     reader = csv.reader(dataFile, delimiter=",")
     for l in reader:
-        zs.append(-float(l[2]))
+        zs.append(-float(l[0]))
 N = len(zs)
 zs = np.asarray(zs)
 
@@ -51,23 +51,42 @@ for z in zs:
     xests.append(kf.step(z))
 xests = np.asarray(xests)
 
+
+xpred = []
+for k in range(N):
+    #print(kf.predict(1).shape)
+    xpred.append(kf.predict(k))
+xpred = np.asarray(xpred)
+
 """
 Visualisations
 """
 # states and measurements
 state_fig = plt.figure()
-ax1 = state_fig.add_subplot(311)
+ax1 = state_fig.add_subplot(411)
 pos_sum = np.sum(xests[:, 0:-1:2], axis=1)
+zeros = np.zeros(N)
+print(np.sum(xpred[:, 0:-1:2], axis=1).shape)
+pos_pred_sum = np.concatenate((zeros, np.sum(xpred[:, 0:-1:2], axis=1)))
 plt.plot(range(N), pos_sum, label='Estimated')
+plt.plot(range(2*N), pos_pred_sum)
 ax1.set_title('Estimated Position')
 
-ax_acc = state_fig.add_subplot(312, sharex=ax1)
+ax_acc = state_fig.add_subplot(412, sharex=ax1)
 plt.plot(range(len(zs)), zs)
 ax_acc.set_title('Measured Acceleration')
 
-ax_off = state_fig.add_subplot(313, sharex=ax1)
+ax_off = state_fig.add_subplot(413, sharex=ax1)
 plt.plot(range(N), xests[:, -1], label='Estimated')
 ax_off.set_title('$x_2[k]$: Acceleration Offset')
+
+'''
+ax1 = state_fig.add_subplot(414)
+print(xpred)
+pos_sum = np.sum(xpred[:, 0:-1:2], axis=1)
+plt.plot(range(N), pos_sum, label='predicted')
+ax1.set_title('Estimated Position')
+'''
 
 plt.show()
 
