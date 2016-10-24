@@ -6,8 +6,8 @@ from queue import Queue
 class TI_IMU:
 
     class IMUFramedPacket(FramedPacket):
-        START = b":"
-        STOP = b"\n"
+        START = b"("
+        STOP = b")"
 
         def __init__(self, packet_queue):
             FramedPacket.__init__(self)
@@ -17,12 +17,19 @@ class TI_IMU:
             return self
 
         def handle_packet(self, packet):
-            vals = [float(v.strip()) for v
-                    in (packet).split()]
-            if len(vals) == 6:
-                state = dict(zip(['x', 'y', 'z', 'roll', 'pitch', 'yaw'],
-                                    vals))
-                self.packet_queue.put(state)
+            vals = []
+            try:
+                vals = [float(v.strip()) for v
+                        in (packet).split()]
+            except ValueError:
+                # sometimes the packet is corrupted and can't be parsed
+                # This usually only happens once during startup, so just ignore this packet
+                pass
+            else:
+                if len(vals) == 6:
+                    state = dict(zip(['x', 'y', 'z', 'roll', 'pitch', 'yaw'],
+                                        vals))
+                    self.packet_queue.put(state)
 
         def handle_out_of_packet_data(self, data):
             print("OP: " + bytes.decode(data))

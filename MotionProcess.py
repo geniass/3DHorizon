@@ -1,3 +1,4 @@
+from threading import Event
 from collections import deque
 from heave_sim.kalman import SinusoidalMotionKalmanFilter
 import numpy as np
