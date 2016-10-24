@@ -2,6 +2,7 @@
 
 from serial.threaded import ReaderThread, FramedPacket
 from queue import Queue
+import queue
 
 class TI_IMU:
 
@@ -29,6 +30,10 @@ class TI_IMU:
                 if len(vals) == 6:
                     state = dict(zip(['x', 'y', 'z', 'roll', 'pitch', 'yaw'],
                                         vals))
+                    try:
+                        self.packet_queue.get_nowait()
+                    except queue.Empty:
+                        pass
                     self.packet_queue.put(state)
 
         def handle_out_of_packet_data(self, data):

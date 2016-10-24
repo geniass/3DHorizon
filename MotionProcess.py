@@ -9,7 +9,7 @@ import multiprocessing as mp
 # Kalman filter parameters
 # number of sinusoidal modes expected in signal
 num_modes = 1
-Fs = 50
+Fs = 250
 dt = 1 / Fs
 R = 2e-5
 q = 0.00006
