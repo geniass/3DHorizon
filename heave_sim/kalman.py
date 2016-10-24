@@ -137,3 +137,14 @@ class SinusoidalMotionKalmanFilter:
         #    print("dt: %f" %(dt))
             self.print_skip = 0
         return self.kf.x
+
+    def predict(self, N):
+        '''
+        Use the current identified state to predict the motion N timesteps
+        forward in time, based on the current state.
+        Returns the predicted state matrix N steps in the future.
+        '''
+        x = self.kf.x
+        for k in range(N):
+            x = self.kf.F.dot(x)
+        return x
