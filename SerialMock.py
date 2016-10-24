@@ -59,4 +59,4 @@ class SerialMock(SerialBase):
         return s
 
 def serial_string(d):
-    return bytes(":%f %f %f %f %f %f\n" % tuple(d), 'utf-8')
+    return bytes("(%f %f %f %f %f %f)" % tuple(d), 'utf-8')

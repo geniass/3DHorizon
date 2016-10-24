@@ -42,7 +42,7 @@ class MyApp(ShowBase):
 
         self.pos = {'x': 0., 'y': 0., 'z': 0.}
 
-        self.ser = serial.Serial('/dev/ttyACM0', 115200)
+        self.ser = serial.Serial('/dev/ttyACM0', 1000000)
         #self.ser = SerialMock()
         self.imu = TI_IMU(self.ser)
 
