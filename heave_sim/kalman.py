@@ -21,11 +21,15 @@ def find_mode_params(acc, Fs, n_modes):
 
     # detrend the data before FFT
     acc = acc - np.mean(acc)
+    # use Fs/0.01 samples to get 0.01 Hz resolution
+    N = int(np.power(2, np.ceil(np.log2(Fs/0.01))))
     y, p, f = spectrum(acc, Fs, N)
+    # plt.plot(f,20*np.log10(y))
+    # plt.show()
 
-    # ignore the first 10 samples to ignore very low frequency peaks
+    # ignore the first 0.05Hz to ignore very low frequency peaks
     y_limited = y
-    y_limited[:10] = 0
+    y_limited[:int(0.1/(Fs/N))] = 0
 
     # find n_modes peaks in FFT, sorted by magnitude
     indexes = peakutils.peak.indexes(y_limited, thres=thresh, min_dist=min_dist)

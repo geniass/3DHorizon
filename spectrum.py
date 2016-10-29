@@ -17,7 +17,7 @@ def spectrum(d, Fs, N):
     # zw_zp = np.hstack((zw[Mo2:M], np.zeros(N - M), zw[0:Mo2]));
     zw_zp = zw
 
-    y = fft(zw_zp) / M
+    y = fft(zw_zp, N) / M
 
     # set values below threshold to 0 to avoid noisy phase spectrum
     thresh = np.max(np.abs(y))/10e3

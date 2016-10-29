@@ -37,7 +37,8 @@ class TI_IMU:
                     self.packet_queue.put(state)
 
         def handle_out_of_packet_data(self, data):
-            print("OP: " + bytes.decode(data))
+            #print("OP: " + bytes.decode(data))
+            pass
 
 
     def __init__(self, comport):
