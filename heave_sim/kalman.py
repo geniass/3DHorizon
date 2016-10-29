@@ -96,6 +96,7 @@ class SinusoidalMotionKalmanFilter:
 
         kf.R *= r**2
 
+        '''
         # this matrix is basically trial and error (i.e. guessing)
         # diagonals are the process noise variance for each state variable
         # higher frequency modes have a higher process noise variance
@@ -104,6 +105,11 @@ class SinusoidalMotionKalmanFilter:
         kf.Q[range(0, 2*n_modes, 2), range(0, 2*n_modes, 2)] = ((q/10)**2) * np.arange(1., n_modes+1)
         kf.Q[range(1, 2*n_modes, 2), range(1, 2*n_modes, 2)] = (q**2) * np.arange(1., n_modes+1)
         kf.Q[-1, -1] = (0.01)**2
+        print('Process Noise (Q):\n', np.array_str(kf.Q, max_line_width=1000000), '\n')
+        '''
+        kf.Q = np.array([[q**2*np.power(dt, 3)/3,   q**2*dt**2/2, 0],
+                         [q**2*dt**2/2,             q**2*dt, 0],
+                         [0, 0, 0.1**2]])
         print('Process Noise (Q):\n', np.array_str(kf.Q, max_line_width=1000000), '\n')
 
         # continuous-time state transition matrix
@@ -118,6 +124,7 @@ class SinusoidalMotionKalmanFilter:
         print('Transition matrix (A):\n', np.array_str(A, max_line_width=1000000), '\n')
         # discretize using matrix exponential
         kf.F = scipy.linalg.expm(A * dt)
+        print(kf.F)
 
         # construct measurement matrix
         # Each row represents the state of one mode: [-w**2, 0].
