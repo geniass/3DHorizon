@@ -148,7 +148,5 @@ class SinusoidalMotionKalmanFilter:
         forward in time, based on the current state.
         Returns the predicted state matrix N steps in the future.
         '''
-        x = self.kf.x
-        for k in range(N):
-            x = self.kf.F.dot(x)
-        return x
+        assert(N > 0)
+        return np.linalg.matrix_power(self.kf.F, N).dot(self.kf.x)
