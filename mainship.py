@@ -13,6 +13,9 @@ from panda3d.core import AntialiasAttrib
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.actor.Actor import Actor
+from panda3d.core import Point3
+
+from direct.interval.IntervalGlobal import Sequence
 
 
 class MyApp(ShowBase):
@@ -29,7 +32,7 @@ class MyApp(ShowBase):
         self.disableMouse()
 
         # Load the environment model.
-        self.scene = self.loader.loadModel("wave.egg)
+        self.scene = self.loader.loadModel("wave.egg")
         # Reparent the model to render.
         self.scene.reparentTo(self.render)
         # Apply scale and position transforms on the model.
@@ -93,7 +96,7 @@ class MyApp(ShowBase):
         shipHprInterval2 = self.shipActor.hprInterval(2,
                                                         Point3(0, 0, 0),
                                                         startHpr=Point3(0, 0, 0))
- 
+
         # Create and play the sequence that coordinates the intervals.
         self.shipSpeed = Sequence(shipPosInterval1,
                                   shipHprInterval1,
@@ -116,7 +119,7 @@ class MyApp(ShowBase):
         finHprInterval2 = self.finActor.hprInterval(3,
                                                       Point3(0, 0, 0),
                                                       startHpr=Point3(180, 0, 0))
- 
+
         # Create and play the sequence that coordinates the intervals.
         self.finSpeed = Sequence(finPosInterval1,
                                   finHprInterval1,
@@ -139,7 +142,7 @@ class MyApp(ShowBase):
         fin1HprInterval2 = self.fin1Actor.hprInterval(3,
                                                         Point3(0, 0, 0),
                                                         startHpr=Point3(180, 0, 0))
- 
+
         # Create and play the sequence that coordinates the intervals.
         self.fin1Speed = Sequence(fin1PosInterval1,
                                   fin1HprInterval1,
@@ -162,7 +165,7 @@ class MyApp(ShowBase):
         fin2HprInterval2 = self.fin2Actor.hprInterval(2,
                                                         Point3(0, 0, 0),
                                                         startHpr=Point3(180, 0, 0))
- 
+
         # Create and play the sequence that coordinates the intervals.
         self.fin2Speed = Sequence(fin2PosInterval1,
                                   fin2HprInterval1,
@@ -185,7 +188,7 @@ class MyApp(ShowBase):
         fin3HprInterval2 = self.fin3Actor.hprInterval(5,
                                                         Point3(0, 0, 0),
                                                         startHpr=Point3(180, 0, 0))
- 
+
         # Create and play the sequence that coordinates the intervals.
         self.fin3Speed = Sequence(fin3PosInterval1,
                                   fin3HprInterval1,
