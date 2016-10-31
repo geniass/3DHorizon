@@ -5,6 +5,7 @@ from heave_sim.sensor import SinusoidalMotion
 from spectrum import spectrum
 import peakutils
 import time
+# import matplotlib.pylab as plt
 
 
 '''
@@ -138,7 +139,7 @@ class SinusoidalMotionKalmanFilter:
         dt = time.time() - t
         self.print_skip += 1
         if self.print_skip >= 10:
-        #    print("dt: %f" %(dt))
+            # print("dt: %f" %(dt))
             self.print_skip = 0
         return self.kf.x
 

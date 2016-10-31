@@ -11,7 +11,7 @@ import multiprocessing as mp
 num_modes = 1
 Fs = 250
 dt = 1 / Fs
-R = 2e-5
+R = 0.01
 q = 0.00006
 # num samples required for 0.05Hz resolution
 N_window = int(Fs / 0.05)

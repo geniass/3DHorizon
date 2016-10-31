@@ -12,17 +12,17 @@ np.random.seed(1233)
 # number of sinusoidal modes expected in signal
 num_modes = 1
 
-dt = 1 / 50
-R = 2e-5
-q = 0.00006
+dt = 1 / 250
+R = 0.01
+q = 0.00001
 
 
 zs = []
 # 'platform_data/11-10-heave.csv
-with open('platform_data/15-10-sway.csv', 'r') as dataFile:
+with open('platform_data/31-10-heave2.csv', 'r') as dataFile:
     reader = csv.reader(dataFile, delimiter=",")
     for l in reader:
-        zs.append(-float(l[0]))
+        zs.append(-float(l[2]))
 N = len(zs)
 zs = np.asarray(zs)
 
