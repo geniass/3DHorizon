@@ -6,7 +6,7 @@ from MotionThread import MotionThread
 from MotionProcess import MotionProcess
 import queue
 #from queue import Queue
-from multiprocessing import Queue
+import multiprocessing as mp
 
 from panda3d.core import loadPrcFile
 from panda3d.core import AntialiasAttrib
@@ -16,6 +16,7 @@ from direct.actor.Actor import Actor
 
 
 class MyApp(ShowBase):
+
     def __init__(self):
         loadPrcFile('./config.prc')
 
@@ -46,20 +47,17 @@ class MyApp(ShowBase):
         #self.ser = SerialMock()
         self.imu = TI_IMU(self.ser)
 
-        self.motion_queue = Queue(maxsize=1)
-        self.motion_thread = MotionProcess(self.imu, self.motion_queue)
+        manager = mp.Manager()
+        self.pos = manager.dict({})
+        self.motion_thread = MotionProcess(self.imu, self.pos)
         self.motion_thread.start()
 
         self.taskMgr.add(self.updateCamera, "updateCameraTask")
 
     def updateCamera(self, task):
-        try:
-            self.pos = self.motion_queue.get(block=False)
-        except queue.Empty:
-            pass
-        else:
+        if self.motion_thread.data_ready():
             self.camera.setHpr(0, self.pos['pitch'], self.pos['roll'])
-            self.camera.setPos(0, -20.0, 3 + 10*self.pos['z'])
+            self.camera.setPos(0, -20.0, 3 + 10 * self.pos['z'])
         return Task.cont
 
 app = MyApp()
