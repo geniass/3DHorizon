@@ -53,7 +53,7 @@ xests = np.asarray(xests)
 
 
 xpred = []
-for k in range(N):
+for k in range(1, N):
     #print(kf.predict(1).shape)
     xpred.append(kf.predict(k))
 xpred = np.asarray(xpred)
@@ -63,20 +63,20 @@ Visualisations
 """
 # states and measurements
 state_fig = plt.figure()
-ax1 = state_fig.add_subplot(411)
+ax1 = state_fig.add_subplot(311)
 pos_sum = np.sum(xests[:, 0:-1:2], axis=1)
-zeros = np.zeros(N)
+zeros = np.zeros(N-1)
 print(np.sum(xpred[:, 0:-1:2], axis=1).shape)
-pos_pred_sum = np.concatenate((zeros, np.sum(xpred[:, 0:-1:2], axis=1)))
+pos_pred_sum = np.concatenate((pos_sum, np.sum(xpred[:, 0:-1:2], axis=1)))
 plt.plot(range(N), pos_sum, label='Estimated')
-plt.plot(range(2*N), pos_pred_sum)
+#plt.plot(range(2*N-1), pos_pred_sum)
 ax1.set_title('Estimated Position')
 
-ax_acc = state_fig.add_subplot(412, sharex=ax1)
+ax_acc = state_fig.add_subplot(312, sharex=ax1)
 plt.plot(range(len(zs)), zs)
 ax_acc.set_title('Measured Acceleration')
 
-ax_off = state_fig.add_subplot(413, sharex=ax1)
+ax_off = state_fig.add_subplot(313, sharex=ax1)
 plt.plot(range(N), xests[:, -1], label='Estimated')
 ax_off.set_title('$x_2[k]$: Acceleration Offset')
 
