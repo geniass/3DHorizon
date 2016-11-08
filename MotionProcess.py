@@ -62,7 +62,7 @@ class MotionProcess(mp.Process):
                 Apply Kalman filter to most recent sample
                 """
                 x = self.kf.step(self.acc_buffer[-1])
-                pos_sum = 100 * np.sum(x[0:-2:2], axis=0)
+                pos_sum = np.sum(x[0:-2:2], axis=0)
                 self.pos['z'] = pos_sum
 
             self.pos['roll'] = state['roll']

@@ -205,7 +205,7 @@ class MyApp(ShowBase):
     def updateCamera(self, task):
         if self.motion_thread.data_ready():
             self.camera.setHpr(0, self.pos['pitch'], self.pos['roll'])
-            self.camera.setPos(0, -20.0, 3 + 10 * self.pos['z'])
+            self.camera.setPos(0, -20.0, 3 + 1000 * self.pos['z'])
         return Task.cont
 
 
