@@ -36,6 +36,8 @@ acc = zs - np.mean(zs)
 t = np.linspace(0., (len(acc)-1)*dt, len(acc))
 sig = np.zeros(len(t))
 for m in modes:
+    if m['y'] < 0.1:
+        continue
     sig += m['y'] * np.cos(2*np.pi*m['f']*t + m['p'])
     print("f=%f: A=%f, p=%f" % (m['f'], m['y'], m['p']))
 plt.plot(t,sig,t,acc)

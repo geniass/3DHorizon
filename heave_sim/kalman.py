@@ -19,7 +19,7 @@ def find_mode_params(acc, Fs, n_modes):
     N = len(acc)
 
     # some peak finding parameters
-    thresh = 0.1
+    thresh = 0.5
     min_dist = np.ceil(0.1 * Fs / N)    # 0.1 Hz
 
     # detrend the data before FFT
@@ -33,6 +33,7 @@ def find_mode_params(acc, Fs, n_modes):
     # ignore the first 0.05Hz to ignore very low frequency peaks
     y_limited = y
     y_limited[:int(0.1 / (Fs / N))] = 0
+    y_limited[int(1 / (Fs / N)):] = 0
 
     # find n_modes peaks in FFT, sorted by magnitude
     indexes = peakutils.peak.indexes(
@@ -47,7 +48,9 @@ def find_mode_params(acc, Fs, n_modes):
     # interp_freqs = peakutils.interpolate(f, y_limited, ind=[p[0] for p in peaks])
     #interp_peaks = zip(interp_freqs, y[indexes], p[indexes])
 
-    return peaks
+    peaks = filter(lambda p: p['y'] >= 0.1, peaks)
+
+    return list(peaks)
 
 
 def get_initial_conditions(modes, acc_train_data, dt):
@@ -83,6 +86,9 @@ class SinusoidalMotionKalmanFilter:
         self.n_modes = n_modes
 
         modes = find_mode_params(acc_train_data, 1 / dt, n_modes)
+
+        if len(modes) == 0:
+            n_modes = len(modes)
 
         # eigenfrequencies for each mode
         ws = [2 * np.pi * m['f'] for m in modes]
